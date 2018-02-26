@@ -13,12 +13,11 @@ const userSchema = new mongoose.Schema({
   google: String,
   github: String,
   instagram: String,
-  linkedin: String,
-  steam: String,
   tokens: Array,
 
   profile: {
-    name: String,
+    first_name: {type: String, required: true},
+    last_name: {type: String, required: true},
     gender: String,
     location: String,
     website: String,
@@ -26,9 +25,6 @@ const userSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-/**
- * Password hash middleware.
- */
 userSchema.pre('save', function save(next) {
   const user = this;
   if (!user.isModified('password')) { return next(); }
@@ -42,18 +38,12 @@ userSchema.pre('save', function save(next) {
   });
 });
 
-/**
- * Helper method for validating user's password.
- */
 userSchema.methods.comparePassword = function comparePassword(candidatePassword, cb) {
   bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
     cb(err, isMatch);
   });
 };
 
-/**
- * Helper method for getting user's gravatar.
- */
 userSchema.methods.gravatar = function gravatar(size) {
   if (!size) {
     size = 200;

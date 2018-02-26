@@ -95,40 +95,6 @@ exports.getFacebook = (req, res, next) => {
 };
 
 /**
- * GET /api/scraping
- * Web scraping example using Cheerio library.
- */
-exports.getScraping = (req, res, next) => {
-  request.get('https://news.ycombinator.com/', (err, request, body) => {
-    if (err) { return next(err); }
-    const $ = cheerio.load(body);
-    const links = [];
-    $('.title a[href^="http"], a[href^="https"]').each((index, element) => {
-      links.push($(element));
-    });
-    res.render('api/scraping', {
-      title: 'Web Scraping',
-      links
-    });
-  });
-};
-
-/**
- * GET /api/github
- * GitHub API Example.
- */
-exports.getGithub = (req, res, next) => {
-  const github = new GitHub();
-  github.repos.get({ owner: 'sahat', repo: 'hackathon-starter' }, (err, repo) => {
-    if (err) { return next(err); }
-    res.render('api/github', {
-      title: 'GitHub API',
-      repo
-    });
-  });
-};
-
-/**
  * GET /api/aviary
  * Aviary image processing example.
  */
@@ -136,95 +102,6 @@ exports.getAviary = (req, res) => {
   res.render('api/aviary', {
     title: 'Aviary API'
   });
-};
-
-/**
- * GET /api/nyt
- * New York Times API example.
- */
-exports.getNewYorkTimes = (req, res, next) => {
-  const query = {
-    'list-name': 'young-adult',
-    'api-key': process.env.NYT_KEY
-  };
-  request.get({ url: 'http://api.nytimes.com/svc/books/v2/lists', qs: query }, (err, request, body) => {
-    if (err) { return next(err); }
-    if (request.statusCode === 403) {
-      return next(new Error('Invalid New York Times API Key'));
-    }
-    const books = JSON.parse(body).results;
-    res.render('api/nyt', {
-      title: 'New York Times API',
-      books
-    });
-  });
-};
-
-/**
- * GET /api/lastfm
- * Last.fm API example.
- */
-exports.getLastfm = (req, res, next) => {
-  const lastfm = new LastFmNode({
-    api_key: process.env.LASTFM_KEY,
-    secret: process.env.LASTFM_SECRET
-  });
-  const artistInfo = () =>
-    new Promise((resolve, reject) => {
-      lastfm.request('artist.getInfo', {
-        artist: 'Roniit',
-        handlers: {
-          success: resolve,
-          error: reject
-        }
-      });
-    });
-  const artistTopTracks = () =>
-    new Promise((resolve, reject) => {
-      lastfm.request('artist.getTopTracks', {
-        artist: 'Roniit',
-        handlers: {
-          success: (data) => {
-            resolve(data.toptracks.track.slice(0, 10));
-          },
-          error: reject
-        }
-      });
-    });
-  const artistTopAlbums = () =>
-      new Promise((resolve, reject) => {
-        lastfm.request('artist.getTopAlbums', {
-          artist: 'Roniit',
-          handlers: {
-            success: (data) => {
-              resolve(data.topalbums.album.slice(0, 3));
-            },
-            error: reject
-          }
-        });
-      });
-  Promise.all([
-    artistInfo(),
-    artistTopTracks(),
-    artistTopAlbums()
-  ])
-  .then(([artistInfo, artistTopAlbums, artistTopTracks]) => {
-    const artist = {
-      name: artistInfo.artist.name,
-      image: artistInfo.artist.image.slice(-1)[0]['#text'],
-      tags: artistInfo.artist.tags.tag,
-      bio: artistInfo.artist.bio.summary,
-      stats: artistInfo.artist.stats,
-      similar: artistInfo.artist.similar.artist,
-      topAlbums: artistTopAlbums,
-      topTracks: artistTopTracks
-    };
-    res.render('api/lastfm', {
-      title: 'Last.fm API',
-      artist
-    });
-  })
-  .catch(next);
 };
 
 /**
@@ -274,60 +151,6 @@ exports.postTwitter = (req, res, next) => {
     req.flash('success', { msg: 'Your tweet has been posted.' });
     res.redirect('/api/twitter');
   });
-};
-
-/**
- * GET /api/steam
- * Steam API example.
- */
-exports.getSteam = (req, res, next) => {
-  const steamId = '76561197982488301';
-  const params = { l: 'english', steamid: steamId, key: process.env.STEAM_KEY };
-  const playerAchievements = () => {
-    params.appid = '49520';
-    return request.getAsync({ url: 'http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/', qs: params, json: true })
-      .then(([request, body]) => {
-        if (request.statusCode === 401) {
-          throw new Error('Invalid Steam API Key');
-        }
-        return body;
-      });
-  };
-  const playerSummaries = () => {
-    params.steamids = steamId;
-    return request.getAsync({ url: 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/', qs: params, json: true })
-      .then(([request, body]) => {
-        if (request.statusCode === 401) {
-          throw Error('Missing or Invalid Steam API Key');
-        }
-        return body;
-      });
-  };
-  const ownedGames = () => {
-    params.include_appinfo = 1;
-    params.include_played_free_games = 1;
-    return request.getAsync({ url: 'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/', qs: params, json: true })
-      .then(([request, body]) => {
-        if (request.statusCode === 401) {
-          throw new Error('Missing or Invalid Steam API Key');
-        }
-        return body;
-      });
-  };
-  Promise.all([
-    playerAchievements(),
-    playerSummaries(),
-    ownedGames()
-  ])
-  .then(([playerAchievements, playerSummaries, ownedGames]) => {
-    res.render('api/steam', {
-      title: 'Steam Web API',
-      ownedGames: ownedGames.response.games,
-      playerAchievemments: playerAchievements.playerstats,
-      playerSummary: playerSummaries.response.players[0]
-    });
-  })
-  .catch(next);
 };
 
 /**
@@ -424,22 +247,6 @@ exports.postClockwork = (req, res, next) => {
     if (err) { return next(err.errDesc); }
     req.flash('success', { msg: `Text sent to ${responseData.responses[0].to}` });
     res.redirect('/api/clockwork');
-  });
-};
-
-/**
- * GET /api/linkedin
- * LinkedIn API example.
- */
-exports.getLinkedin = (req, res, next) => {
-  const token = req.user.tokens.find(token => token.kind === 'linkedin');
-  const linkedin = Linkedin.init(token.accessToken);
-  linkedin.people.me((err, $in) => {
-    if (err) { return next(err); }
-    res.render('api/linkedin', {
-      title: 'LinkedIn API',
-      profile: $in
-    });
   });
 };
 

@@ -9,7 +9,7 @@
   "author": "Sahat Yalkabov",
   "license": "MIT",
   "scripts": {
-    "start": "node app.js",
+    "start": "nodemon app.js",
     "test": "mocha --reporter spec",
     "postinstall": "npm rebuild node-sass",
     "eslint": "eslint **/*.js"
@@ -18,6 +18,7 @@
     "bcrypt-nodejs": "^0.0.3",
     "bluebird": "^3.5.0",
     "body-parser": "^1.17.2",
+    "bootstrap-slider": "^10.0.0",
     "chalk": "^2.1.0",
     "cheerio": "^1.0.0-rc.2",
     "clockwork": "^0.1.4",
@@ -69,6 +70,7 @@
     "eslint-plugin-chai-friendly": "^0.4.0",
     "eslint-plugin-import": "^2.7.0",
     "mocha": "^3.5.0",
+    "nodemon": "^1.15.1",
     "sinon": "^3.2.1",
     "sinon-mongoose": "^2.0.2",
     "supertest": "^3.0.0"

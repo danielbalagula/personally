@@ -4,10 +4,6 @@ const nodemailer = require('nodemailer');
 const passport = require('passport');
 const User = require('../models/User');
 
-/**
- * GET /login
- * Login page.
- */
 exports.getLogin = (req, res) => {
   if (req.user) {
     return res.redirect('/');
@@ -17,10 +13,6 @@ exports.getLogin = (req, res) => {
   });
 };
 
-/**
- * POST /login
- * Sign in using email and password.
- */
 exports.postLogin = (req, res, next) => {
   req.assert('email', 'Email is not valid').isEmail();
   req.assert('password', 'Password cannot be blank').notEmpty();
@@ -47,19 +39,11 @@ exports.postLogin = (req, res, next) => {
   })(req, res, next);
 };
 
-/**
- * GET /logout
- * Log out.
- */
 exports.logout = (req, res) => {
   req.logout();
   res.redirect('/');
 };
 
-/**
- * GET /signup
- * Signup page.
- */
 exports.getSignup = (req, res) => {
   if (req.user) {
     return res.redirect('/');
@@ -69,14 +53,12 @@ exports.getSignup = (req, res) => {
   });
 };
 
-/**
- * POST /signup
- * Create a new local account.
- */
 exports.postSignup = (req, res, next) => {
   req.assert('email', 'Email is not valid').isEmail();
   req.assert('password', 'Password must be at least 4 characters long').len(4);
   req.assert('confirmPassword', 'Passwords do not match').equals(req.body.password);
+  req.assert('first_name', 'First name cannot be blank').notEmpty();
+  req.assert('last_name', 'Last name cannot be blank').notEmpty();
   req.sanitize('email').normalizeEmail({ gmail_remove_dots: false });
 
   const errors = req.validationErrors();
@@ -88,7 +70,11 @@ exports.postSignup = (req, res, next) => {
 
   const user = new User({
     email: req.body.email,
-    password: req.body.password
+    password: req.body.password,
+    profile: {
+      first_name: req.body.first_name,
+      last_name: req.body.last_name
+    }
   });
 
   User.findOne({ email: req.body.email }, (err, existingUser) => {
@@ -109,20 +95,12 @@ exports.postSignup = (req, res, next) => {
   });
 };
 
-/**
- * GET /account
- * Profile page.
- */
 exports.getAccount = (req, res) => {
   res.render('account/profile', {
     title: 'Account Management'
   });
 };
 
-/**
- * POST /account/profile
- * Update profile information.
- */
 exports.postUpdateProfile = (req, res, next) => {
   req.assert('email', 'Please enter a valid email address.').isEmail();
   req.sanitize('email').normalizeEmail({ gmail_remove_dots: false });
@@ -137,14 +115,14 @@ exports.postUpdateProfile = (req, res, next) => {
   User.findById(req.user.id, (err, user) => {
     if (err) { return next(err); }
     user.email = req.body.email || '';
-    user.profile.name = req.body.name || '';
+    user.profile.first_name = req.body.first_name || '';
+    user.profile.last_name = req.body.last_name || '';
     user.profile.gender = req.body.gender || '';
     user.profile.location = req.body.location || '';
-    user.profile.website = req.body.website || '';
     user.save((err) => {
       if (err) {
         if (err.code === 11000) {
-          req.flash('errors', { msg: 'The email address you have entered is already associated with an account.' });
+          req.flash('errors', { msg: 'The email address is already taken.' });
           return res.redirect('/account');
         }
         return next(err);
@@ -155,10 +133,6 @@ exports.postUpdateProfile = (req, res, next) => {
   });
 };
 
-/**
- * POST /account/password
- * Update current password.
- */
 exports.postUpdatePassword = (req, res, next) => {
   req.assert('password', 'Password must be at least 4 characters long').len(4);
   req.assert('confirmPassword', 'Passwords do not match').equals(req.body.password);
@@ -181,10 +155,6 @@ exports.postUpdatePassword = (req, res, next) => {
   });
 };
 
-/**
- * POST /account/delete
- * Delete user account.
- */
 exports.postDeleteAccount = (req, res, next) => {
   User.remove({ _id: req.user.id }, (err) => {
     if (err) { return next(err); }
@@ -194,10 +164,6 @@ exports.postDeleteAccount = (req, res, next) => {
   });
 };
 
-/**
- * GET /account/unlink/:provider
- * Unlink OAuth provider.
- */
 exports.getOauthUnlink = (req, res, next) => {
   const provider = req.params.provider;
   User.findById(req.user.id, (err, user) => {
@@ -212,10 +178,6 @@ exports.getOauthUnlink = (req, res, next) => {
   });
 };
 
-/**
- * GET /reset/:token
- * Reset Password page.
- */
 exports.getReset = (req, res, next) => {
   if (req.isAuthenticated()) {
     return res.redirect('/');
@@ -235,10 +197,6 @@ exports.getReset = (req, res, next) => {
     });
 };
 
-/**
- * POST /reset/:token
- * Process the reset password request.
- */
 exports.postReset = (req, res, next) => {
   req.assert('password', 'Password must be at least 4 characters long.').len(4);
   req.assert('confirm', 'Passwords must match.').equals(req.body.password);
@@ -297,10 +255,6 @@ exports.postReset = (req, res, next) => {
     .catch(err => next(err));
 };
 
-/**
- * GET /forgot
- * Forgot Password page.
- */
 exports.getForgot = (req, res) => {
   if (req.isAuthenticated()) {
     return res.redirect('/');
@@ -310,10 +264,6 @@ exports.getForgot = (req, res) => {
   });
 };
 
-/**
- * POST /forgot
- * Create a random token, then the send user an email with a reset link.
- */
 exports.postForgot = (req, res, next) => {
   req.assert('email', 'Please enter a valid email address.').isEmail();
   req.sanitize('email').normalizeEmail({ gmail_remove_dots: false });

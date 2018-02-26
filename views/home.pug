@@ -1,27 +1,51 @@
 extends layout
 
 block content
-  h1 Hackathon Starter
-  p.lead A boilerplate for Node.js web applications.
+  if !user
+    h1 Personali
+    p.lead Learn more about yourself.
+  else 
+    h1 Hi #{user.profile.first_name}
+    p.lead What do you want to do today?
   hr
   .row
-    .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
-      p
-        a.btn.btn-default(href='#', role='button') View details »
-    .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
-      p
-        a.btn.btn-default(href='#', role='button') View details »
-    .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
-      p
-        a.btn.btn-default(href='#', role='button') View details »
-    .col-sm-6
-      h2 Heading
-      p Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.
-      p
-        a.btn.btn-default(href='#', role='button') View details »
+    if !user
+      .col-sm-12
+        h2 Your writing can say a lot about you
+        p Your tweets, statuses, journal entries, and more. 
+        p Personali securely and privately learns from your writing habits and gives you valuable information about patterns it recognizes.
+      .col-sm-6
+        h2 Privacy
+        p Personali never stores any of your sensitive information plainly
+        p None of your tweets, status updates, or other social media posts are ever stored
+        p All other forms of data are encrypted and hidden from everyone but you
+      .col-sm-6
+        h2 Intelligence
+        p Personali uses state of the art machine learning to look for patterns in your writing that can help you learn about yourself
+    else
+      .row
+        .col-sm-6
+          a(href='/my-writing')
+            .thumbnail
+              .caption(style='padding-left: 16px;')
+                h3
+                  i.fa.fa-edit
+                  |   Add some writing
+                p Securely upload a text file or use our online editor
+        .col-sm-6
+          a(href='/make-report')
+            .thumbnail
+              .caption(style='padding-left: 16px;')
+                h3
+                  i.fa.fa-clipboard
+                  |   Make a report
+                p Get insights
+      .row
+        .col-sm-6
+          a(href='/reminders')
+            .thumbnail
+              .caption(style='padding-left: 16px;')
+                h3
+                  i.fas.fa-lightbulb
+                  |   Reminders
+                p Manage reminders
